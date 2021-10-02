@@ -8,36 +8,16 @@ import { spotDataTopo } from "./utils/data/spotDataTopo";
 import { feature } from "topojson-client";
 import randomColor from "randomcolor";
 
-const uk = [
-  "Wales",
-  "Scotland",
-  "Ireland",
-  "England",
-  "Isle of Man",
-  "N Ireland",
-  "Channel Islands",
-];
-const points = spotData
-  // .filter((x) => uk.includes(x.country))
-  .map((spot) => [spot.lon, spot.lat]);
+const points = spotData.map((spot) => [spot.lon, spot.lat]);
 const padding = 0;
 const countries = Array.from(new Set(spotData.map((spot) => spot.country)));
-const colors = ["red", "orange", "yellow", "green", "blue", "purple", "pink"];
+const colors = ["blue", "purple", "pink", "red"];
 
 const countryColors: { [key: string]: string } = {};
 countries.forEach(
   (country) =>
     (countryColors[country] = colors[Math.floor(Math.random() * colors.length)])
 );
-
-// const filtGeometries = spotDataTopo.objects.convertcsv.geometries.filter(
-//   (geometryObj) => uk.includes(geometryObj.properties.country)
-// );
-
-// const topoFinal = { ...spotDataTopo };
-// topoFinal.objects.convertcsv.geometries = filtGeometries;
-
-// const suh = { ...spotDataTopo, objects: ...spotDataTopo.objects.convertcsv. };
 
 export const Map = () => {
   const parentRef = useRef<HTMLDivElement>(null);
