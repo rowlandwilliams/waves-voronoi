@@ -1,28 +1,48 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
-import { debounce, throttle } from "lodash";
-import { statePolygons } from "./utils/data/statePolygons";
-import { MapTooltip } from "./MapTooltip/MapTooltip";
-import { TooltipData } from "../../types";
-import { drawMap } from "./utils/plot-utils";
+import { debounce } from "lodash";
+import { select, geoMercator } from "d3";
+import { Delaunay } from "d3-delaunay";
+import { spotData } from "./utils/data/spotData";
+import { spotDataTopo } from "./utils/data/spotDataTopo";
+import { feature } from "topojson-client";
+import randomColor from "randomcolor";
 
-const initialState = {
-  mouseCoords: [],
-  data: null,
-};
+const uk = [
+  "Wales",
+  "Scotland",
+  "Ireland",
+  "England",
+  "Isle of Man",
+  "N Ireland",
+  "Channel Islands",
+];
+const points = spotData
+  // .filter((x) => uk.includes(x.country))
+  .map((spot) => [spot.lon, spot.lat]);
+const padding = 0;
+const countries = Array.from(new Set(spotData.map((spot) => spot.country)));
+const colors = ["red", "orange", "yellow", "green", "blue", "purple", "pink"];
+
+const countryColors: { [key: string]: string } = {};
+countries.forEach(
+  (country) =>
+    (countryColors[country] = colors[Math.floor(Math.random() * colors.length)])
+);
+
+// const filtGeometries = spotDataTopo.objects.convertcsv.geometries.filter(
+//   (geometryObj) => uk.includes(geometryObj.properties.country)
+// );
+
+// const topoFinal = { ...spotDataTopo };
+// topoFinal.objects.convertcsv.geometries = filtGeometries;
+
+// const suh = { ...spotDataTopo, objects: ...spotDataTopo.objects.convertcsv. };
 
 export const Map = () => {
   const parentRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
-  const [pointIsHovered, setPointIsHovered] = useState(false);
-  const [tooltipData, setTooltipData] = useState<TooltipData>(initialState);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  const debounceSetMouse = useMemo(
-    () => throttle(setTooltipData, 10),
-    [setTooltipData]
-  );
 
   const handleWindowResize = debounce((current: HTMLDivElement) => {
     setWidth(current.offsetWidth);
@@ -40,39 +60,65 @@ export const Map = () => {
   }, [parentRef, handleWindowResize]);
 
   useEffect(() => {
-    drawMap(width, height, statePolygons, debounceSetMouse, setPointIsHovered);
-    setIsLoaded(true);
-  }, [width, height, debounceSetMouse]);
+    const drawMap = () => {
+      const projection = geoMercator().fitExtent(
+        [
+          [padding, padding],
+          [width - padding, height - padding],
+        ],
+        feature(
+          spotDataTopo as any,
+          spotDataTopo.objects.convertcsv as any
+        ) as any
+      );
+      const pointsFinal = points.map((point) =>
+        projection(point as [number, number])
+      );
+      const delaunay = Delaunay.from(pointsFinal as any);
+
+      const voronoi = delaunay.voronoi([0, 0, width, height]);
+
+      const voronoiGroup = select("#voronoi");
+
+      voronoiGroup
+        .selectAll("path")
+        .data(spotData)
+        .join("path")
+        .attr("d", (d: any, i) => voronoi.renderCell(i))
+        .style("fill", (d: any, i) =>
+          randomColor({
+            luminosity: "bright",
+            hue: countryColors[d.country],
+          })
+        )
+        // .style("opacity", (d, i) => Math.random())
+        .style("stroke", "white")
+        .style("stroke-opacity", 0.2);
+
+      const pointsGroup = select("#points");
+      pointsGroup
+        .selectAll("circle")
+        .data(pointsFinal)
+        .join("circle")
+        .attr("r", 0.9)
+        .attr("fill", "white")
+        .attr("cx", (d: any) => d[0])
+        .attr("cy", (d: any) => d[1]);
+    };
+    drawMap();
+  }, [width, height]);
 
   return (
     <>
       <div
-        className={classNames(
-          "relative w-screen h-96 md:h-screen transition-all duration-1000 bg-gray-900",
-          { "opacity-0": !isLoaded }
-        )}
+        className={classNames("relative w-screen h-96 md:h-screen")}
         ref={parentRef}
       >
-        <svg width={width} height={height} id="map-svg">
-          <g id="map-parent">
-            <g id="shadow" width="100%" height="1000px">
-              <path id="outline"></path>
-            </g>
-            <g id="map-group"></g>
-            <g id="plot-group"></g>
-            <g id="point-group"></g>
-          </g>
+        <svg width="100%" height="100%" id="map-svg">
+          <g id="voronoi"></g>
+          <g id="points"></g>
         </svg>
       </div>
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 font-semibold p-4 font-tt-interfaces-bold text-gray-100">
-        Population of the 400 Largest US cities in 2013
-      </div>
-      <MapTooltip
-        pointIsHovered={pointIsHovered}
-        tooltipData={tooltipData}
-        width={width}
-        height={height}
-      />
     </>
   );
 };
