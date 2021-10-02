@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/waves-voronoi/static/css/main.b1f47266.chunk.css",
+    "main.js": "/waves-voronoi/static/js/main.3aef23df.chunk.js",
+    "main.js.map": "/waves-voronoi/static/js/main.3aef23df.chunk.js.map",
+    "runtime-main.js": "/waves-voronoi/static/js/runtime-main.33f68b25.js",
+    "runtime-main.js.map": "/waves-voronoi/static/js/runtime-main.33f68b25.js.map",
+    "static/js/2.17bbde0e.chunk.js": "/waves-voronoi/static/js/2.17bbde0e.chunk.js",
+    "static/js/2.17bbde0e.chunk.js.map": "/waves-voronoi/static/js/2.17bbde0e.chunk.js.map",
+    "static/js/3.8b882242.chunk.js": "/waves-voronoi/static/js/3.8b882242.chunk.js",
+    "static/js/3.8b882242.chunk.js.map": "/waves-voronoi/static/js/3.8b882242.chunk.js.map",
+    "index.html": "/waves-voronoi/index.html",
+    "static/css/main.b1f47266.chunk.css.map": "/waves-voronoi/static/css/main.b1f47266.chunk.css.map",
+    "static/js/2.17bbde0e.chunk.js.LICENSE.txt": "/waves-voronoi/static/js/2.17bbde0e.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.33f68b25.js",
+    "static/js/2.17bbde0e.chunk.js",
+    "static/css/main.b1f47266.chunk.css",
+    "static/js/main.3aef23df.chunk.js"
+  ]
+}
